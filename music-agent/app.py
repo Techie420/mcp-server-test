@@ -78,6 +78,12 @@ def _session_user_id() -> int | None:
         return None
 
 
+def _wants_json_response() -> bool:
+    accept = (request.headers.get("Accept") or "").lower()
+    requested_with = (request.headers.get("X-Requested-With") or "").lower()
+    return "application/json" in accept or requested_with == "xmlhttprequest"
+
+
 def _request_to_dict(row) -> dict:
     return {
         "request_id": str(row.id),
@@ -402,6 +408,7 @@ def create_app() -> Flask:
         db: Session = g.db
         error: str | None = None
         result: dict | None = None
+        wants_json = _wants_json_response()
         if request.method == "POST":
             form_type = request.form.get("form_type", "").strip()
             if form_type == "download":
@@ -461,6 +468,13 @@ def create_app() -> Flask:
                             logger.exception("YouTube download failed")
                             error = str(exc)
                             update_song_request(row, status="failed")
+
+                if wants_json:
+                    if error:
+                        return jsonify({"ok": False, "error": error}), 400
+                    if result:
+                        return jsonify({"ok": True, **result})
+                    return jsonify({"ok": False, "error": "Download request did not complete."}), 500
 
         requests_data = [_request_to_dict(row) for row in list_song_requests_for_admin(db, user_id)]
         visible_columns = {
