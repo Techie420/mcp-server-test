@@ -6,4 +6,4 @@ opencv-python
 pytesseract
 requests
 yt-dlp
-youtube-dl
+#youtube-dl
