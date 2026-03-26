@@ -2,8 +2,8 @@ Flask
 SQLAlchemy
 alembic
 psycopg2-binary
-opencv-python
-pytesseract
+#opencv-python
+#pytesseract
 requests
 yt-dlp
 #youtube-dl
