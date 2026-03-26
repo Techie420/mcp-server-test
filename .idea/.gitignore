@@ -46,7 +46,7 @@ Thumbs.db
 
 # Project runtime directories
 music-agent/downloads/
-music-agent/uploads/
+
 
 # Python build artifacts
 build/
