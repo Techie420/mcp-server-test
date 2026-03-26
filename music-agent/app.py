@@ -3,14 +3,11 @@ from __future__ import annotations
 import os
 import logging
 from pathlib import Path
-from uuid import uuid4
 
 from flask import Flask, abort, jsonify, g, redirect, render_template, request, send_file, session, url_for
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
-
 from config import Settings
 from database import SessionLocal
 from downloader import search_youtube_songs, yt_downloader
@@ -25,21 +22,15 @@ from repository import (
     list_song_requests_for_admin,
     update_song_request,
 )
-from utils import ensure_directory, retry, setup_logging
-from vision import detect_song_and_artist, extract_text_from_image
+from utils import retry, setup_logging
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
 ROLE_REQUESTOR = "requestor"
 ROLE_ADMIN = "admin"
 SESSION_ROLE_KEY = "auth_role"
 SESSION_USER_ID_KEY = "auth_user_id"
 REQUEST_STATUSES = {"pending", "processing", "completed", "failed"}
-
-
-def _is_allowed_image(filename: str) -> bool:
-    return Path(filename).suffix.lower() in ALLOWED_EXTENSIONS
 
 
 def _build_search_query(song_title: str, artist: str) -> str:
@@ -105,9 +96,6 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 15 * 1024 * 1024
     app.secret_key = os.getenv("MUSIC_AGENT_SECRET_KEY", "music-agent-dev-secret")
-
-    upload_dir = Path("uploads")
-    ensure_directory(upload_dir)
 
     @app.before_request
     def open_db_session() -> None:
@@ -325,64 +313,7 @@ def create_app() -> Flask:
                         error = str(exc)
                         update_song_request(row, status="failed")
             else:
-                file = request.files.get("screenshot")
-                if file is None or not file.filename:
-                    error = "Select an image file first."
-                elif not _is_allowed_image(file.filename):
-                    error = "Unsupported file type. Use png, jpg, jpeg, bmp, or webp."
-                else:
-                    safe_name = secure_filename(file.filename)
-                    file_path = upload_dir / f"{uuid4().hex}_{safe_name}"
-                    file.save(file_path)
-                    row = create_song_request(
-                        db,
-                        requestor_id=user_id,
-                        assigned_admin_id=admin.id,
-                        request_type="screenshot",
-                        status="processing",
-                    )
-                    submission_request_id = str(row.id)
-                    try:
-                        extract = retry(settings.max_retries, settings.retry_backoff_seconds)(
-                            extract_text_from_image
-                        )
-                        extracted_text = extract(file_path, settings.tesseract_psm)
-                        guess = detect_song_and_artist(extracted_text)
-                        update_song_request(
-                            row,
-                            song_title=guess.title or None,
-                            artist_name=guess.artist or None,
-                            extracted_text=extracted_text,
-                        )
-                        query = _build_search_query(guess.title, guess.artist)
-                        if not query:
-                            error = "Could not detect song or artist from the image."
-                            update_song_request(row, status="failed")
-                        else:
-                            results = retry(settings.max_retries, settings.retry_backoff_seconds)(
-                                search_youtube_songs
-                            )(query, limit=5)
-                            search_query = query
-                            search_results = [
-                                {
-                                    "video_id": r.video_id,
-                                    "url": r.url,
-                                    "title": r.title,
-                                    "uploader": r.uploader,
-                                    "duration": r.duration,
-                                    "duration_display": f"{r.duration // 60}:{(r.duration % 60):02d}" if r.duration else None,
-                                    "request_id": str(row.id),
-                                    "assigned_admin_id": str(admin.id),
-                                }
-                                for r in results
-                            ]
-                    except Exception as exc:  # noqa: BLE001
-                        logger.exception("Processing failed")
-                        error = str(exc)
-                        update_song_request(row, status="failed")
-                    finally:
-                        if file_path.exists():
-                            file_path.unlink()
+                error = "Screenshot OCR is temporarily disabled. Use text search for now."
 
         return render_template(
             "user.html",
