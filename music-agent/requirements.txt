@@ -1,6 +1,6 @@
 Flask
-opencv-python
-pytesseract
+SQLAlchemy
+alembic
+psycopg2-binary
 requests
 yt-dlp
-youtube-dl

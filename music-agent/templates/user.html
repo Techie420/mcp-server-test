@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CueMeInDJ Audience</title>
+  {% include "partials/styles.html" %}
+</head>
+<body class="user-page">
+  <main class="shell">
+    <section class="page-topbar">
+      <div class="page-brand">
+        <strong>CueMeInDJ</strong>
+        <span>Audience request station for live events. Send the next floor-filler without changing the request workflow.</span>
+      </div>
+      <div class="actions">
+        <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </section>
+
+    <section class="hero">
+      <article class="masthead">
+        <div class="eyebrow">Audience Request . Match . Queue</div>
+        <h1>CueMeInDJ</h1>
+        <p class="lead">
+          Send your next track to the DJ booth. Type a song, upload a screenshot from anywhere, review the search matches, and push the right one into the request queue.
+        </p>
+        <div class="hero-grid">
+          <div class="hero-stat">
+            <strong>Type It Fast</strong>
+            Drop a title and artist when you already know what should hit the speakers next.
+          </div>
+          <div class="hero-stat">
+            <strong>Screenshot It</strong>
+            Upload visual proof from a playlist, reel, or music app when text is easier to capture than type.
+          </div>
+          <div class="hero-stat">
+            <strong>Queue It</strong>
+            Every request is routed to the selected DJ admin for review and download using the same backend flow.
+          </div>
+        </div>
+        <div class="wave-line" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </article>
+
+      <aside class="masthead visual" aria-hidden="true">
+        <div class="dashboard-visual">
+          <div class="equalizer">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="visual-caption">
+            <strong>Live Crowd Energy</strong>
+            <p>Build requests like a backstage pass: fast input, clear feedback, and direct routing to the admin handling the event.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="status-strip">
+      <article class="mini-panel">
+        <strong>Request Flow</strong>
+        <span>Search by text, or scan a screenshot, then lock the correct result into the request list.</span>
+      </article>
+      <article class="mini-panel">
+        <strong>DJ Routing</strong>
+        <span>Pick the admin who should receive the request so the right booth sees the demand immediately.</span>
+      </article>
+      <article class="mini-panel">
+        <strong>Event Ready</strong>
+        <span>Everything stays inside the existing session-based system. Only the visual layer has changed.</span>
+      </article>
+    </section>
+
+    {% if submission_message %}
+      <div class="alert success">
+        {{ submission_message }}{% if submission_request_id %} (Request ID: {{ submission_request_id }}){% endif %}
+      </div>
+    {% endif %}
+
+    {% if error %}
+      <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <section class="form-grid">
+      {% include "partials/request_by_text_form.html" %}
+      {% include "partials/request_by_screenshot_form.html" %}
+    </section>
+
+    {% if search_results %}
+      {% include "partials/search_results.html" %}
+    {% endif %}
+  </main>
+  <script>
+    document.querySelectorAll(".js-submit-form").forEach((form) => {
+      form.addEventListener("submit", () => {
+        const button = form.querySelector('button[type="submit"]');
+        if (button) {
+          button.disabled = true;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

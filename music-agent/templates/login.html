@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CueMeInDJ Login</title>
+  {% include "partials/styles.html" %}
+</head>
+<body class="login-page">
+  <main class="shell">
+    <section class="hero">
+      <article class="masthead">
+        <div class="eyebrow">Secure Entry . Crowd Side . DJ Side</div>
+        <h1>CueMeInDJ Login</h1>
+        <p class="lead">
+          Step into the live request flow. Audience members send tracks to the floor, DJs review demand and pull songs straight into the queue.
+        </p>
+        <div class="hero-grid">
+          <div class="hero-stat">
+            <strong>Audience Access</strong>
+            Send song ideas by typing the track name or uploading a screenshot from a reel, playlist, or story.
+          </div>
+          <div class="hero-stat">
+            <strong>DJ Access</strong>
+            Review incoming requests, spot the right match fast, and download tracks into the active music folder.
+          </div>
+          <div class="hero-stat">
+            <strong>Session Flow</strong>
+            Keep the event moving with the same role-based authentication and request pipeline already wired into the app.
+          </div>
+        </div>
+        <div class="wave-line" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </article>
+
+      <aside class="masthead visual login-visual" aria-hidden="true">
+        <div class="turntable">
+          <div class="turntable-platter">
+            <div class="turntable-record">
+              <div class="turntable-label"></div>
+            </div>
+          </div>
+          <div class="turntable-arm">
+            <div class="turntable-arm-head"></div>
+          </div>
+          <div class="turntable-base-light"></div>
+        </div>
+      </aside>
+    </section>
+
+    {% if error %}
+      <div class="alert">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert success">{{ success }}</div>
+    {% endif %}
+
+    <section class="form-grid">
+      <article class="input-card">
+        <h2 class="card-title">Enter The Booth</h2>
+        <p class="card-copy">Pick your role, authenticate, and continue into the live request queue.</p>
+        <form method="post" class="stack js-submit-form">
+          <label>
+            Login as
+            <select name="role" required>
+              <option value="requestor" {% if selected_role == "requestor" %}selected{% endif %}>Login as User</option>
+              <option value="admin" {% if selected_role == "admin" %}selected{% endif %}>Login as Admin</option>
+            </select>
+          </label>
+          <label>
+            Username
+            <input type="text" name="username" required autocomplete="username">
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" required autocomplete="current-password">
+          </label>
+          <input type="hidden" name="action" value="login">
+          <div class="btn-row">
+            <button class="btn primary" type="submit">Login</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="input-card">
+        <h2 class="card-title">Create Access</h2>
+        <p class="card-copy">Set up a new audience or admin account without changing the existing authentication flow.</p>
+        <form method="post" class="stack js-submit-form">
+          <label>
+            Create as
+            <select name="signup_role" required>
+              <option value="requestor" {% if signup_role == "requestor" %}selected{% endif %}>Create User</option>
+              <option value="admin" {% if signup_role == "admin" %}selected{% endif %}>Create Admin</option>
+            </select>
+          </label>
+          <label>
+            Username
+            <input type="text" name="signup_username" required autocomplete="username">
+          </label>
+          <label>
+            Password
+            <input type="password" name="signup_password" required autocomplete="new-password">
+          </label>
+          <label>
+            Confirm Password
+            <input type="password" name="confirm_password" required autocomplete="new-password">
+          </label>
+          <input type="hidden" name="action" value="signup">
+          <div class="btn-row">
+            <button class="btn secondary" type="submit">Create Account</button>
+          </div>
+        </form>
+      </article>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll(".js-submit-form").forEach((form) => {
+      form.addEventListener("submit", () => {
+        const button = form.querySelector('button[type="submit"]');
+        if (button) {
+          button.disabled = true;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
